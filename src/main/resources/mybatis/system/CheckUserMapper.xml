@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.project.system.mapper.CheckUserMapper">
+    
+    <resultMap type="CheckUser" id="CheckUserResult">
+        <result property="id"    column="id"    />
+        <result property="plantId"    column="plant_id"    />
+        <result property="type"    column="type"    />
+        <result property="userId"    column="user_id"    />
+        <result property="delFlag"    column="del_flag"    />
+        <result property="createId"    column="create_id"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateId"    column="update_id"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="remark"    column="remark"    />
+    </resultMap>
+
+    <sql id="selectCheckUserVo">
+        SELECT
+            id,
+            plant_id,
+            TYPE,
+            user_id,
+            (SELECT
+                 su.user_name
+             FROM
+                 sys_user su
+             WHERE su.user_id = check_user.user_id) AS userName,
+            (SELECT
+                 su.avatar
+             FROM
+                 sys_user su
+             WHERE su.user_id = check_user.user_id) AS avatar,
+            del_flag,
+            create_id,
+            create_time,
+            update_id,
+            update_time,
+            remark
+        FROM
+            check_user
+    </sql>
+
+    <select id="selectCheckUserList" parameterType="CheckUser" resultMap="CheckUserResult">
+        <include refid="selectCheckUserVo"/>
+        <where>
+            del_flag=0
+            <if test="plantId != null "> and plant_id = #{plantId}</if>
+            <if test="type != null  and type != ''"> and type = #{type}</if>
+            <if test="userId != null "> and user_id = #{userId}</if>
+            <if test="createId != null "> and create_id = #{createId}</if>
+            <if test="updateId != null "> and update_id = #{updateId}</if>
+        </where>
+    </select>
+    
+    <select id="selectCheckUserById" parameterType="Long" resultMap="CheckUserResult">
+        <include refid="selectCheckUserVo"/>
+        where id = #{id}
+    </select>
+        
+    <insert id="insertCheckUser" parameterType="CheckUser" useGeneratedKeys="true" keyProperty="id">
+        insert into check_user
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="plantId != null">plant_id,</if>
+            <if test="type != null">type,</if>
+            <if test="userId != null">user_id,</if>
+            <if test="delFlag != null">del_flag,</if>
+            <if test="createId != null">create_id,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateId != null">update_id,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="remark != null">remark,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="plantId != null">#{plantId},</if>
+            <if test="type != null">#{type},</if>
+            <if test="userId != null">#{userId},</if>
+            <if test="delFlag != null">#{delFlag},</if>
+            <if test="createId != null">#{createId},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateId != null">#{updateId},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="remark != null">#{remark},</if>
+         </trim>
+    </insert>
+
+    <update id="updateCheckUser" parameterType="CheckUser">
+        update check_user
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="plantId != null">plant_id = #{plantId},</if>
+            <if test="type != null">type = #{type},</if>
+            <if test="userId != null">user_id = #{userId},</if>
+            <if test="delFlag != null">del_flag = #{delFlag},</if>
+            <if test="createId != null">create_id = #{createId},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateId != null">update_id = #{updateId},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <update id="deleteCheckUserById" parameterType="Long">
+        delete  from check_user where id = #{id}
+    </update>
+
+    <delete id="deleteCheckUserByIds" parameterType="String">
+        delete from check_user where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

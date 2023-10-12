@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.project.system.mapper.SysMenuMUserMapper">
+    
+    <resultMap type="SysMenuMUser" id="SysMenuMUserResult">
+        <result property="id"    column="id"    />
+        <result property="menuId"    column="menu_id"    />
+        <result property="orderNum"    column="order_num"    />
+        <result property="createId"    column="create_id"    />
+        <result property="createTime"    column="create_time"    />
+    </resultMap>
+
+    <sql id="selectSysMenuMUserVo">
+        select id, menu_id, order_num, create_id, create_time from sys_menu_m_user
+    </sql>
+
+    <select id="selectSysMenuMUserList" parameterType="SysMenuMUser" resultMap="SysMenuMUserResult">
+        <include refid="selectSysMenuMUserVo"/>
+        <where>  
+            <if test="menuId != null "> and menu_id = #{menuId}</if>
+            <if test="orderNum != null "> and order_num = #{orderNum}</if>
+            <if test="createId != null "> and create_id = #{createId}</if>
+        </where>
+    </select>
+    
+    <select id="selectSysMenuMUserById" parameterType="Long" resultMap="SysMenuMUserResult">
+        <include refid="selectSysMenuMUserVo"/>
+        where id = #{id}
+    </select>
+        
+    <insert id="insertSysMenuMUser" parameterType="SysMenuMUser">
+        insert into sys_menu_m_user
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">id,</if>
+            <if test="menuId != null">menu_id,</if>
+            <if test="orderNum != null">order_num,</if>
+            <if test="createId != null">create_id,</if>
+            <if test="createTime != null">create_time,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">#{id},</if>
+            <if test="menuId != null">#{menuId},</if>
+            <if test="orderNum != null">#{orderNum},</if>
+            <if test="createId != null">#{createId},</if>
+            <if test="createTime != null">#{createTime},</if>
+         </trim>
+    </insert>
+
+    <update id="updateSysMenuMUser" parameterType="SysMenuMUser">
+        update sys_menu_m_user
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="menuId != null">menu_id = #{menuId},</if>
+            <if test="orderNum != null">order_num = #{orderNum},</if>
+            <if test="createId != null">create_id = #{createId},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteSysMenuMUserById" parameterType="Long">
+        delete from sys_menu_m_user where id = #{id}
+    </delete>
+
+    <delete id="deleteSysMenuMUserByIds" parameterType="String">
+        delete from sys_menu_m_user where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <delete id="deleteSysMenuMUserByUserId" parameterType="Long">
+        delete from sys_menu_m_user where create_id = #{userId}
+    </delete>
+</mapper>

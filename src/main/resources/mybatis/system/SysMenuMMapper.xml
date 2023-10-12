@@ -1,0 +1,386 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.project.system.mapper.SysMenuMMapper">
+
+    <resultMap type="SysMenuM" id="SysMenuMResult">
+        <result property="id"    column="id"    />
+        <result property="imgType"    column="img_type" typeHandler="com.ruoyi.framework.config.IntegerValueEnumTypeHandler"   />
+        <result property="parentId"    column="parent_id"    />
+        <result property="name"    column="name"    />
+        <result property="path"    column="path"    />
+
+        <result property="image"    column="image"    />
+        <result property="icon"    column="icon"    />
+        <result property="color"    column="color"    />
+        <result property="orderNum"    column="order_num"    />
+        <result property="component"    column="component"    />
+        <result property="query"    column="query"    />
+        <result property="isFrame"    column="is_frame"    />
+        <result property="isCache"    column="is_cache"    />
+        <result property="menuType"    column="menu_type"    />
+        <result property="visible"    column="visible"    />
+        <result property="status"    column="status"    />
+        <result property="perms"    column="perms"    />
+        <result property="createBy"    column="create_by"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"    column="update_by"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="remark"    column="remark"    />
+        <result property="menuUserId"    column="menu_user_id"    />
+    </resultMap>
+
+    <resultMap type="SysMenuMUserVO" id="SysMenuMVOResult">
+        <result property="menuId"    column="menuId"    />
+        <result property="imgType"    column="img_type" typeHandler="com.ruoyi.framework.config.IntegerValueEnumTypeHandler"   />
+        <result property="name"    column="name"    />
+        <result property="path"    column="path"    />
+
+        <result property="image"    column="image"    />
+        <result property="icon"    column="icon"    />
+        <result property="color"    column="color"    />
+        <result property="orderNum"    column="order_num"    />
+        <result property="component"    column="component"    />
+        <result property="query"    column="query"    />
+        <result property="perms"    column="perms"    />
+        <result property="isFrame"    column="is_frame"    />
+        <result property="isCache"    column="is_cache"    />
+        <result property="menuType"    column="menu_type"    />
+        <result property="menuUserId"    column="menuUserId"    />
+        <result property="orderNum"    column="orderNum"    />
+    </resultMap>
+
+    <sql id="selectSysMenuMVo">
+        select id, parent_id, name, path,img_type,image, icon, color, order_num, component, query, is_frame, is_cache, menu_type, visible,
+               status, perms, create_by, create_time, update_by, update_time, remark from sys_menu_m
+    </sql>
+
+    <select id="selectSysMenuMList" parameterType="SysMenuM" resultMap="SysMenuMResult">
+        <include refid="selectSysMenuMVo"/>
+        <where>
+            <if test="parentId != null "> and parent_id = #{parentId}</if>
+            <if test="name != null  and name != ''"> and name like concat('%', #{name}, '%')</if>
+            <if test="path != null  and path != ''"> and path = #{path}</if>
+            <if test="icon != null  and icon != ''"> and icon = #{icon}</if>
+            <if test="color != null  and color != ''"> and color = #{color}</if>
+            <if test="orderNum != null "> and order_num = #{orderNum}</if>
+            <if test="component != null  and component != ''"> and component = #{component}</if>
+            <if test="query != null  and query != ''"> and query = #{query}</if>
+            <if test="isFrame != null "> and is_frame = #{isFrame}</if>
+            <if test="isCache != null "> and is_cache = #{isCache}</if>
+            <if test="menuType != null  and menuType != ''"> and menu_type = #{menuType}</if>
+            <if test="visible != null  and visible != ''"> and visible = #{visible}</if>
+            <if test="status != null  and status != ''"> and status = #{status}</if>
+            <if test="perms != null  and perms != ''"> and perms = #{perms}</if>
+        </where>
+        order by order_num asc
+    </select>
+
+    <select id="selectSysMenuMById" parameterType="Long" resultMap="SysMenuMResult">
+        <include refid="selectSysMenuMVo"/>
+        where id = #{id}
+    </select>
+
+    <!--PC查询菜单列表-->
+    <select id="selectSysMenuMListByUserId" parameterType="SysMenuM" resultMap="SysMenuMResult">
+        select distinct m.id, m.parent_id,m.color, m.menu_name, m.path,m.img_type,m.image, m.component, m.`query`, m.visible, m.status, ifnull(m.perms,'') as perms, m.is_frame, m.is_cache, m.menu_type, m.icon, m.order_num, m.create_time
+        from sys_menu_m m
+        left join sys_role_menu_m rm on m.id = rm.menu_id
+        left join sys_user_role ur on rm.role_id = ur.role_id
+        left join sys_role ro on ur.role_id = ro.role_id
+        where ur.user_id = #{params.userId}
+        <if test="menuName != null and menuName != ''">
+            AND m.menu_name like concat('%', #{menuName}, '%')
+        </if>
+        <if test="visible != null and visible != ''">
+            AND m.visible = #{visible}
+        </if>
+        <if test="status != null and status != ''">
+            AND m.status = #{status}
+        </if>
+        order by m.parent_id, m.order_num asc
+    </select>
+    <!--查询出所有菜单：如果是管理员，则获取所有菜单-->
+    <select id="selectMenuTreeAll" resultMap="SysMenuMResult">
+        SELECT DISTINCT
+            m.id,
+            m.parent_id,
+            m.name,
+            m.path,
+            m.img_type,
+            m.image,
+            m.color,
+            m.component,
+            m.`query`,
+            m.visible,
+            m.status,
+            IFNULL(m.perms, '') AS perms,
+            m.is_frame,
+            m.is_cache,
+            m.menu_type,
+            m.icon,
+            m.order_num,
+            m.create_time
+        FROM
+            sys_menu_m m
+        WHERE m.menu_type IN ('M', 'C')
+          AND m.status = 0
+        ORDER BY m.parent_id,
+                 m.order_num
+    </select>
+    <!--不是管理员，则根据角色获取菜单-->
+    <select id="selectMenuTreeByUserId" parameterType="Long" resultMap="SysMenuMResult">
+        SELECT DISTINCT
+            m.id,
+            m.parent_id,
+            m.NAME,
+            m.color,
+            m.path,
+            m.img_type,
+            m.image,
+            m.component,
+            m.`query`,
+            m.visible,
+            m.STATUS,
+            IFNULL( m.perms, '' ) AS perms,
+            m.is_frame,
+            m.is_cache,
+            m.menu_type,
+            m.icon,
+            m.order_num,
+            m.create_time,
+            smmu.id as menu_user_id
+        FROM
+            sys_menu_m m
+                LEFT JOIN sys_role_menu_m rm ON m.id = rm.menu_id
+                LEFT JOIN sys_user_role ur ON rm.role_id = ur.role_id
+                LEFT JOIN sys_role ro ON ur.role_id = ro.role_id
+                LEFT JOIN sys_user u ON ur.user_id = u.user_id
+                LEFT JOIN sys_menu_m_user smmu ON m.id = smmu.menu_id
+                AND u.user_id = smmu.create_id
+        WHERE
+            u.user_id = #{userId}
+          AND m.menu_type IN ( 'M', 'C' )
+          AND m.STATUS = 0
+          AND ro.STATUS = 0
+        ORDER BY
+            m.parent_id,
+            m.order_num
+    </select>
+
+    <!--根据用户id和菜单名称关键字获取菜单-->
+    <select id="selectMenuByUserIdAndName" parameterType="SysMenuM" resultMap="SysMenuMResult">
+        SELECT DISTINCT
+        m.id,
+        m.parent_id,
+        m.NAME,
+        m.color,
+        m.path,
+        m.img_type,
+        m.image,
+        m.component,
+        m.`query`,
+        m.visible,
+        m.STATUS,
+        IFNULL( m.perms, '' ) AS perms,
+        m.is_frame,
+        m.is_cache,
+        m.menu_type,
+        m.icon,
+        m.order_num,
+        m.create_time,
+        smmu.id as menu_user_id
+        FROM
+        sys_menu_m m
+        LEFT JOIN sys_role_menu_m rm ON m.id = rm.menu_id
+        LEFT JOIN sys_user_role ur ON rm.role_id = ur.role_id
+        LEFT JOIN sys_role ro ON ur.role_id = ro.role_id
+        LEFT JOIN sys_user u ON ur.user_id = u.user_id
+        LEFT JOIN sys_menu_m_user smmu ON m.id = smmu.menu_id
+        AND u.user_id = smmu.create_id
+        <where>
+            u.user_id = #{userId}
+            <if test="name != null and name != ''">
+                AND m.name like concat('%', #{name}, '%')
+            </if>
+            AND m.menu_type IN ('C')
+            AND m.STATUS = 0
+            AND ro.STATUS = 0
+        </where>
+        ORDER BY
+        m.parent_id,
+        m.order_num
+    </select>
+
+    <!-- 获取我的应用列表 -->
+    <select id="selectMenuByUserId" parameterType="Long" resultMap="SysMenuMVOResult">
+        SELECT
+            DISTINCT
+            m.id as menuId,
+            m.NAME,
+            m.color,
+            m.path,
+            m.img_type,
+            m.image,
+            m.component,
+            m.perms,
+            m.query,
+            m.icon,
+            m.is_frame,
+            smmu.id as menuUserId,
+            smmu.order_num as orderNum
+        FROM
+            sys_menu_m m
+                LEFT JOIN sys_role_menu_m rm ON m.id = rm.menu_id
+                LEFT JOIN sys_user_role ur ON rm.role_id = ur.role_id
+                LEFT JOIN sys_role ro ON ur.role_id = ro.role_id
+                LEFT JOIN sys_user u ON ur.user_id = u.user_id
+                INNER JOIN sys_menu_m_user smmu ON m.id = smmu.menu_id
+                AND u.user_id = smmu.create_id
+        WHERE
+            u.user_id = #{userId}
+          AND m.menu_type IN ( 'M', 'C' )
+          AND m.STATUS = 0
+          AND ro.STATUS = 0
+        ORDER BY
+            smmu.order_num
+    </select>
+
+    <!-- 获取要初始化的应用id列表 -->
+    <select id="selectMenuIdsByName" resultType="Long">
+        SELECT
+        m3.id
+        FROM
+        sys_menu_m m1
+        INNER JOIN sys_menu_m m2 on m1.id = m2.parent_id
+        INNER JOIN sys_menu_m m3 on m2.id = m3.parent_id
+        WHERE
+        m1.name = #{menuParentName}
+        AND m3.name in
+        <foreach item="menuName" collection="menuNameList" open="(" separator="," close=")">
+            #{menuName}
+        </foreach>
+        ORDER BY field(m3.name,
+        <foreach item="menuName" collection="menuNameList" separator="," close=")">
+            #{menuName}
+        </foreach>
+    </select>
+
+    <!--根据菜单名称和父级id查询-->
+    <select id="checkMenuNameUnique" parameterType="SysMenuM" resultMap="SysMenuMResult">
+        <include refid="selectSysMenuMVo"/>
+        where name=#{name} and parent_id = #{parentId} limit 1
+    </select>
+    <!--父级id查询是否含有子节点-->
+    <select id="hasChildByMenuId" resultType="Integer">
+        select count(1) from sys_menu_m where parent_id = #{menuId}
+    </select>
+    <select id="selectMenuListByRoleId" resultType="Long">
+        select m.id
+        from sys_menu_m m
+        left join sys_role_menu_m rm on m.id = rm.menu_id
+        where rm.role_id = #{roleId}
+        <if test="menuCheckStrictly">
+            and m.id not in (select m.parent_id from sys_menu_m m inner join sys_role_menu rm on m.id = rm.menu_id and rm.role_id = #{roleId})
+        </if>
+        order by m.parent_id, m.order_num
+    </select>
+    <!-- 根据用户Id查询移动端菜单权限列表 -->
+    <select id="selectMenuPermsByUserId" parameterType="Long" resultType="String">
+        select distinct m.perms
+        from sys_menu_m m
+                 left join sys_role_menu_m rm on m.id = rm.menu_id
+                 left join sys_user_role ur on rm.role_id = ur.role_id
+                 left join sys_role r on r.role_id = ur.role_id
+        where m.status = '0' and r.status = '0' and ur.user_id = #{userId}
+    </select>
+    <insert id="insertSysMenuM" parameterType="SysMenuM" useGeneratedKeys="true" keyProperty="id">
+        insert into sys_menu_m
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="parentId != null">parent_id,</if>
+            <if test="name != null and name != ''">name,</if>
+            <if test="path != null">path,</if>
+            <if test="imgType != null">img_type,</if>
+            <if test="image != null">image,</if>
+            <if test="icon != null">icon,</if>
+            <if test="color != null">color,</if>
+            <if test="orderNum != null">order_num,</if>
+            <if test="component != null">component,</if>
+            <if test="query != null">query,</if>
+            <if test="isFrame != null">is_frame,</if>
+            <if test="isCache != null">is_cache,</if>
+            <if test="menuType != null">menu_type,</if>
+            <if test="visible != null">visible,</if>
+            <if test="status != null">status,</if>
+            <if test="perms != null">perms,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="remark != null">remark,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="parentId != null">#{parentId},</if>
+            <if test="name != null and name != ''">#{name},</if>
+            <if test="path != null">#{path},</if>
+            <if test="imgType != null">#{imgType,typeHandler=com.ruoyi.framework.config.IntegerValueEnumTypeHandler},</if>
+            <if test="image != null">#{image},</if>
+            <if test="icon != null">#{icon},</if>
+            <if test="color != null">#{color},</if>
+            <if test="orderNum != null">#{orderNum},</if>
+            <if test="component != null">#{component},</if>
+            <if test="query != null">#{query},</if>
+            <if test="isFrame != null">#{isFrame},</if>
+            <if test="isCache != null">#{isCache},</if>
+            <if test="menuType != null">#{menuType},</if>
+            <if test="visible != null">#{visible},</if>
+            <if test="status != null">#{status},</if>
+            <if test="perms != null">#{perms},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="remark != null">#{remark},</if>
+        </trim>
+    </insert>
+
+    <update id="updateSysMenuM" parameterType="SysMenuM">
+        update sys_menu_m
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="parentId != null">parent_id = #{parentId},</if>
+            <if test="name != null and name != ''">name = #{name},</if>
+            <if test="path != null">path = #{path},</if>
+            <if test="imgType != null">img_type = #{imgType,typeHandler=com.ruoyi.framework.config.IntegerValueEnumTypeHandler},</if>
+            <if test="image != null">image = #{image},</if>
+            <if test="icon != null">icon = #{icon},</if>
+            <if test="color != null">color = #{color},</if>
+            <if test="orderNum != null">order_num = #{orderNum},</if>
+            <if test="component != null">component = #{component},</if>
+            <if test="query != null">query = #{query},</if>
+            <if test="isFrame != null">is_frame = #{isFrame},</if>
+            <if test="isCache != null">is_cache = #{isCache},</if>
+            <if test="menuType != null">menu_type = #{menuType},</if>
+            <if test="visible != null">visible = #{visible},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="perms != null">perms = #{perms},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteSysMenuMById" parameterType="Long">
+        delete from sys_menu_m where id = #{id}
+    </delete>
+
+    <delete id="deleteSysMenuMByIds" parameterType="String">
+        delete from sys_menu_m where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

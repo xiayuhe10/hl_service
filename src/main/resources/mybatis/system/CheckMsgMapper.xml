@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.project.system.mapper.CheckMsgMapper">
+    
+    <resultMap type="CheckMsg" id="CheckMsgResult">
+        <result property="id"    column="id"    />
+        <result property="type"    column="type"     typeHandler="com.ruoyi.framework.config.IntegerValueEnumTypeHandler"/>
+        <result property="status"    column="status"    typeHandler="com.ruoyi.framework.config.IntegerValueEnumTypeHandler"/>
+        <result property="isRead"    column="is_read"    typeHandler="com.ruoyi.framework.config.IntegerValueEnumTypeHandler"/>
+        <result property="bizId"    column="biz_id"    />
+        <result property="userId"    column="user_id"    />
+
+        <result property="opinion"    column="opinion"    />
+
+        <result property="createId"    column="create_id"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateId"    column="update_id"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="delFlag"    column="del_flag"    />
+        <result property="remark"    column="remark"    />
+    </resultMap>
+
+    <sql id="selectCheckMsgVo">
+        select id,
+               biz_id,
+               user_id,
+               (SELECT su.user_name FROM sys_user su WHERE su.user_id = check_msg.user_id) userName,
+               type,
+               status,
+               opinion,
+               is_read,
+               create_id,
+               (SELECT su.user_name FROM sys_user su WHERE su.user_id = create_id) createBy,
+               create_time,
+               update_id,
+               update_time,
+               del_flag,
+               remark
+        from check_msg
+    </sql>
+
+    <select id="selectCheckMsgList" parameterType="CheckMsg" resultMap="CheckMsgResult">
+        <include refid="selectCheckMsgVo"/>
+        <where>
+            del_flag=0
+            and status not in (0)
+            <if test="bizId != null "> and biz_id = #{bizId}</if>
+            <if test="userId != null "> and user_id = #{userId}</if>
+            <if test="type != null"> and type = #{type,typeHandler=com.ruoyi.framework.config.IntegerValueEnumTypeHandler}</if>
+            <if test="status != null"> and status = #{status,typeHandler=com.ruoyi.framework.config.IntegerValueEnumTypeHandler}</if>
+            <if test="opinion != null  and opinion != ''"> and opinion = #{opinion}</if>
+            <if test="isRead != null"> and is_read = #{isRead,typeHandler=com.ruoyi.framework.config.IntegerValueEnumTypeHandler}</if>
+            <if test="createId != null "> and create_id = #{createId}</if>
+            <if test="updateId != null "> and update_id = #{updateId}</if>
+        </where>
+        ORDER BY create_time DESC
+    </select>
+
+    <select id="selectCheckMsgById" parameterType="Long" resultMap="CheckMsgResult">
+        <include refid="selectCheckMsgVo"/>
+        where id = #{id}
+    </select>
+    <!--根据bizId查找所有列表-->
+    <select id="selectCheckMsgByBizId" parameterType="Long" resultMap="CheckMsgResult">
+        <include refid="selectCheckMsgVo"/>
+        where   del_flag= 0 and biz_id= #{bizId}
+    </select>
+    <!--根据bizId查找未操作的列表-->
+    <select id="selectCheckMsgByBizIdStatus" parameterType="Long" resultMap="CheckMsgResult">
+        <include refid="selectCheckMsgVo"/>
+        where   del_flag= 0  and status=0 and biz_id= #{bizId}
+    </select>
+    <!--查询当前用户的未读消息-->
+    <select id="selectUnReadTotalMsg" parameterType="Long" resultType="integer">
+        SELECT COUNT(1)
+        FROM check_msg
+        WHERE is_read='0' AND del_flag=0 AND user_id=#{userId}
+    </select>
+    <insert id="insertCheckMsg" parameterType="CheckMsg" useGeneratedKeys="true" keyProperty="id">
+        insert into check_msg
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="bizId != null">biz_id,</if>
+            <if test="userId != null">user_id,</if>
+            <if test="type != null">type,</if>
+            <if test="status != null">status,</if>
+            <if test="opinion != null">opinion,</if>
+            <if test="isRead != null">is_read,</if>
+            <if test="createId != null">create_id,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateId != null">update_id,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="delFlag != null">del_flag,</if>
+            <if test="remark != null">remark,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="bizId != null">#{bizId},</if>
+            <if test="userId != null">#{userId},</if>
+            <if test="type != null">#{type,typeHandler=com.ruoyi.framework.config.IntegerValueEnumTypeHandler},</if>
+            <if test="status != null">#{status,typeHandler=com.ruoyi.framework.config.IntegerValueEnumTypeHandler},</if>
+            <if test="opinion != null">#{opinion},</if>
+            <if test="isRead != null">#{isRead,typeHandler=com.ruoyi.framework.config.IntegerValueEnumTypeHandler},</if>
+            <if test="createId != null">#{createId},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateId != null">#{updateId},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="delFlag != null">#{delFlag},</if>
+            <if test="remark != null">#{remark},</if>
+         </trim>
+    </insert>
+
+    <update id="updateCheckMsg" parameterType="CheckMsg">
+        update check_msg
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="bizId != null">biz_id = #{bizId},</if>
+            <if test="userId != null">user_id = #{userId},</if>
+            <if test="type != null">type = #{type,typeHandler=com.ruoyi.framework.config.IntegerValueEnumTypeHandler},</if>
+            <if test="status != null">status = #{status,typeHandler=com.ruoyi.framework.config.IntegerValueEnumTypeHandler},</if>
+            <if test="opinion != null">opinion = #{opinion},</if>
+            <if test="isRead != null">is_read = #{isRead,typeHandler=com.ruoyi.framework.config.IntegerValueEnumTypeHandler},</if>
+            <if test="createId != null">create_id = #{createId},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateId != null">update_id = #{updateId},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="delFlag != null">del_flag = #{delFlag},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteCheckMsgById" parameterType="Long">
+        update check_msg set del_flag = '1' where id = #{id}
+    </delete>
+    <delete id="deleteCheckMsgByBizId" parameterType="Long">
+        update check_msg set del_flag = '1' where biz_id = #{bizId}
+    </delete>
+    <delete id="deleteCheckMsgByIds" parameterType="String">
+        update check_msg set del_flag = '1' where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>
