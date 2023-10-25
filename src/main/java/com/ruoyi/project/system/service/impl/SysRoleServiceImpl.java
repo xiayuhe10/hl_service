@@ -5,6 +5,9 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import com.ruoyi.project.system.domain.*;
+import com.ruoyi.project.system.mapper.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,20 +17,11 @@ import com.ruoyi.common.utils.SecurityUtils;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.common.utils.spring.SpringUtils;
 import com.ruoyi.framework.aspectj.lang.annotation.DataScope;
-import com.ruoyi.project.system.domain.SysRole;
-import com.ruoyi.project.system.domain.SysRoleDept;
-import com.ruoyi.project.system.domain.SysRoleMenu;
-import com.ruoyi.project.system.domain.SysUser;
-import com.ruoyi.project.system.domain.SysUserRole;
-import com.ruoyi.project.system.mapper.SysRoleDeptMapper;
-import com.ruoyi.project.system.mapper.SysRoleMapper;
-import com.ruoyi.project.system.mapper.SysRoleMenuMapper;
-import com.ruoyi.project.system.mapper.SysUserRoleMapper;
 import com.ruoyi.project.system.service.ISysRoleService;
 
 /**
  * 角色 业务层处理
- * 
+ *
  * @author ruoyi
  */
 @Service
@@ -45,9 +39,12 @@ public class SysRoleServiceImpl implements ISysRoleService
     @Autowired
     private SysRoleDeptMapper roleDeptMapper;
 
+    @Autowired
+    private SysRoleMenuMMapper sysRoleMenuMMapper;
+
     /**
      * 根据条件分页查询角色数据
-     * 
+     *
      * @param role 角色信息
      * @return 角色数据集合信息
      */
@@ -60,7 +57,7 @@ public class SysRoleServiceImpl implements ISysRoleService
 
     /**
      * 根据用户ID查询角色
-     * 
+     *
      * @param userId 用户ID
      * @return 角色列表
      */
@@ -85,7 +82,7 @@ public class SysRoleServiceImpl implements ISysRoleService
 
     /**
      * 根据用户ID查询权限
-     * 
+     *
      * @param userId 用户ID
      * @return 权限列表
      */
@@ -106,7 +103,7 @@ public class SysRoleServiceImpl implements ISysRoleService
 
     /**
      * 查询所有角色
-     * 
+     *
      * @return 角色列表
      */
     @Override
@@ -117,7 +114,7 @@ public class SysRoleServiceImpl implements ISysRoleService
 
     /**
      * 根据用户ID获取角色选择框列表
-     * 
+     *
      * @param userId 用户ID
      * @return 选中角色ID列表
      */
@@ -129,7 +126,7 @@ public class SysRoleServiceImpl implements ISysRoleService
 
     /**
      * 通过角色ID查询角色
-     * 
+     *
      * @param roleId 角色ID
      * @return 角色对象信息
      */
@@ -141,7 +138,7 @@ public class SysRoleServiceImpl implements ISysRoleService
 
     /**
      * 校验角色名称是否唯一
-     * 
+     *
      * @param role 角色信息
      * @return 结果
      */
@@ -159,7 +156,7 @@ public class SysRoleServiceImpl implements ISysRoleService
 
     /**
      * 校验角色权限是否唯一
-     * 
+     *
      * @param role 角色信息
      * @return 结果
      */
@@ -177,7 +174,7 @@ public class SysRoleServiceImpl implements ISysRoleService
 
     /**
      * 校验角色是否允许操作
-     * 
+     *
      * @param role 角色信息
      */
     @Override
@@ -191,7 +188,7 @@ public class SysRoleServiceImpl implements ISysRoleService
 
     /**
      * 校验角色是否有数据权限
-     * 
+     *
      * @param roleId 角色id
      */
     @Override
@@ -211,7 +208,7 @@ public class SysRoleServiceImpl implements ISysRoleService
 
     /**
      * 通过角色ID查询角色使用数量
-     * 
+     *
      * @param roleId 角色ID
      * @return 结果
      */
@@ -222,8 +219,47 @@ public class SysRoleServiceImpl implements ISysRoleService
     }
 
     /**
+     * app菜单
+     *
+     * @param role
+     * @return
+     */
+    @Transactional
+    @Override
+    public int addAppMenu(SysRole role) {
+
+        // 修改角色信息
+        roleMapper.updateRole(role);
+        //删除角色与app菜单关联
+        sysRoleMenuMMapper.deleteRoleMenuByRoleId(role.getRoleId());
+        // 新增角色与app菜单关联
+        return this.insertRoleAppMenu(role);
+    }
+
+    /**
+     * 新增角色APP菜单信息
+     *
+     * @param role 角色对象
+     */
+    public int insertRoleAppMenu(SysRole role) {
+        int rows = 1;
+        // 新增用户与角色管理
+        List<SysRoleMenuM> list = new ArrayList<>();
+        for (Long menuId : role.getAppMenuIds()) {
+            SysRoleMenuM rm = new SysRoleMenuM();
+            rm.setRoleId(role.getRoleId());
+            rm.setMenuId(menuId);
+            list.add(rm);
+        }
+        if (list.size() > 0) {
+            rows = sysRoleMenuMMapper.batchRoleMenu(list);
+        }
+        return rows;
+    }
+
+    /**
      * 新增保存角色信息
-     * 
+     *
      * @param role 角色信息
      * @return 结果
      */
@@ -238,7 +274,7 @@ public class SysRoleServiceImpl implements ISysRoleService
 
     /**
      * 修改保存角色信息
-     * 
+     *
      * @param role 角色信息
      * @return 结果
      */
@@ -255,7 +291,7 @@ public class SysRoleServiceImpl implements ISysRoleService
 
     /**
      * 修改角色状态
-     * 
+     *
      * @param role 角色信息
      * @return 结果
      */
@@ -267,7 +303,7 @@ public class SysRoleServiceImpl implements ISysRoleService
 
     /**
      * 修改数据权限信息
-     * 
+     *
      * @param role 角色信息
      * @return 结果
      */
@@ -285,7 +321,7 @@ public class SysRoleServiceImpl implements ISysRoleService
 
     /**
      * 新增角色菜单信息
-     * 
+     *
      * @param role 角色对象
      */
     public int insertRoleMenu(SysRole role)
@@ -333,7 +369,7 @@ public class SysRoleServiceImpl implements ISysRoleService
 
     /**
      * 通过角色ID删除角色
-     * 
+     *
      * @param roleId 角色ID
      * @return 结果
      */
@@ -350,7 +386,7 @@ public class SysRoleServiceImpl implements ISysRoleService
 
     /**
      * 批量删除角色信息
-     * 
+     *
      * @param roleIds 需要删除的角色ID
      * @return 结果
      */
@@ -377,7 +413,7 @@ public class SysRoleServiceImpl implements ISysRoleService
 
     /**
      * 取消授权用户角色
-     * 
+     *
      * @param userRole 用户和角色关联信息
      * @return 结果
      */
@@ -389,7 +425,7 @@ public class SysRoleServiceImpl implements ISysRoleService
 
     /**
      * 批量取消授权用户角色
-     * 
+     *
      * @param roleId 角色ID
      * @param userIds 需要取消授权的用户数据ID
      * @return 结果
@@ -402,7 +438,7 @@ public class SysRoleServiceImpl implements ISysRoleService
 
     /**
      * 批量选择授权用户角色
-     * 
+     *
      * @param roleId 角色ID
      * @param userIds 需要授权的用户数据ID
      * @return 结果

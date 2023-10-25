@@ -12,7 +12,7 @@ import com.ruoyi.framework.web.domain.BaseEntity;
 
 /**
  * 角色表 sys_role
- * 
+ *
  * @author ruoyi
  */
 public class SysRole extends BaseEntity
@@ -63,6 +63,17 @@ public class SysRole extends BaseEntity
 
     /** 角色菜单权限 */
     private Set<String> permissions;
+
+    public Long[] getAppMenuIds() {
+        return appMenuIds;
+    }
+
+    public void setAppMenuIds(Long[] appMenuIds) {
+        this.appMenuIds = appMenuIds;
+    }
+
+    /**APP菜单组*/
+    private Long[] appMenuIds;
 
     public SysRole()
     {
@@ -222,20 +233,20 @@ public class SysRole extends BaseEntity
     @Override
     public String toString() {
         return new ToStringBuilder(this,ToStringStyle.MULTI_LINE_STYLE)
-            .append("roleId", getRoleId())
-            .append("roleName", getRoleName())
-            .append("roleKey", getRoleKey())
-            .append("roleSort", getRoleSort())
-            .append("dataScope", getDataScope())
-            .append("menuCheckStrictly", isMenuCheckStrictly())
-            .append("deptCheckStrictly", isDeptCheckStrictly())
-            .append("status", getStatus())
-            .append("delFlag", getDelFlag())
-            .append("createBy", getCreateBy())
-            .append("createTime", getCreateTime())
-            .append("updateBy", getUpdateBy())
-            .append("updateTime", getUpdateTime())
-            .append("remark", getRemark())
-            .toString();
+                .append("roleId", getRoleId())
+                .append("roleName", getRoleName())
+                .append("roleKey", getRoleKey())
+                .append("roleSort", getRoleSort())
+                .append("dataScope", getDataScope())
+                .append("menuCheckStrictly", isMenuCheckStrictly())
+                .append("deptCheckStrictly", isDeptCheckStrictly())
+                .append("status", getStatus())
+                .append("delFlag", getDelFlag())
+                .append("createBy", getCreateBy())
+                .append("createTime", getCreateTime())
+                .append("updateBy", getUpdateBy())
+                .append("updateTime", getUpdateTime())
+                .append("remark", getRemark())
+                .toString();
     }
 }
